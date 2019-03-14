@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -24,6 +25,7 @@ func main() {
 
 func WrapParagraphs(lineLength int) (paragraphs []string) {
 	all, _ := ioutil.ReadAll(os.Stdin)
+	all = bytes.ReplaceAll(all, []byte{'\t'}, []byte("    "))
 	paragraphs = strings.Split(string(all), "\n\n")
 	for x := range paragraphs {
 		paragraphs[x] = text.Wrap(paragraphs[x], lineLength)
@@ -47,8 +49,15 @@ func FlattenIntoLines(paragraphs []string, maxWidth int) (lines []string, lineLe
 			max = len(line)
 		}
 	}
+
+	// fill in all lines with trailing spaces
 	for l := range lines {
 		lines[l] += strings.Repeat(" ", max-len(lines[l]))
+	}
+
+	// get rid of trailing blank lines
+	for strings.TrimSpace(lines[len(lines)-1]) == "" {
+		lines = lines[:len(lines)-2]
 	}
 	return lines, max
 }
